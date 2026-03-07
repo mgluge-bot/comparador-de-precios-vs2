@@ -3,6 +3,13 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import datetime
 import re
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
 
 productos = [
     {
@@ -20,19 +27,30 @@ productos = [
 headers = {
     "User-Agent": "Mozilla/5.0"
 }
+options = Options()
+options.add_argument("--headless")
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-dev-shm-usage")
+
+driver = webdriver.Chrome(
+    service=Service(ChromeDriverManager().install()),
+    options=options
+)
+
+wait = WebDriverWait(driver, 15)
 
 def precio_farmacity(url):
     try:
-        r = requests.get(url, headers=headers)
-        soup = BeautifulSoup(r.text, "html.parser")
+        driver.get(url)
 
-        precio = soup.select_one(".vtex-product-price-1-x-sellingPriceValue")
-        lista = soup.select_one(".vtex-product-price-1-x-listPriceValue")
+        precio = wait.until(
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, ".vtex-product-price-1-x-sellingPriceValue")
+            )
+        )
 
-        precio = precio.text.strip() if precio else "NA"
-        lista = lista.text.strip() if lista else "NA"
+        return precio.text, "NA"
 
-        return precio, lista
     except:
         return "NA", "NA"
 
@@ -68,6 +86,8 @@ for p in productos:
         "precio_farmaplus": pp,
         "lista_farmaplus": lp
     })
+
+driver.quit()
 
 df = pd.DataFrame(data)
 
