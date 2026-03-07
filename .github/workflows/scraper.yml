@@ -1,0 +1,37 @@
+name: scraper precios
+
+on:
+  schedule:
+    - cron: '0 10 * * *'
+  workflow_dispatch:
+
+jobs:
+  run-scraper:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Instalar librerías
+        run: |
+          pip install pandas
+          pip install requests
+          pip install beautifulsoup4
+          pip install openpyxl
+
+      - name: Ejecutar scraper
+        run: python scraper.py
+
+      - name: Commit resultados
+        run: |
+          git config --global user.name "bot-precios"
+          git config --global user.email "bot@github.com"
+          git add .
+          git commit -m "actualizacion diaria precios" || echo "sin cambios"
+          git push
