@@ -24,6 +24,8 @@ jobs:
           pip install requests
           pip install beautifulsoup4
           pip install openpyxl
+          pip install selenium 
+          pip install webdriver-manager
 
       - name: Ejecutar scraper
         run: python scraper.py
